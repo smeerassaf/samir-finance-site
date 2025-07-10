@@ -60,19 +60,6 @@
       margin-top: 15px;
       cursor: pointer;
     }
-    .option-btn {
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
-      gap: 10px;
-      text-align: right;
-      padding: 15px;
-      background-color: rgba(255,255,255,0.2);
-      margin-top: 10px;
-      border-radius: 10px;
-      cursor: pointer;
-    }
-    .icon { font-size: 28px; }
     .back-btn {
       background-color: #ffcccc;
       color: #900;
@@ -84,69 +71,80 @@
 <body>
 <div class="box" id="loginBox">
   <h2>تسجيل الدخول</h2>
-  <input type="text" id="nameInput" placeholder="الاسم الكامل">
-  <input type="email" id="emailInput" placeholder="البريد الإلكتروني">
-  <input type="password" id="passwordInput" placeholder="كلمة المرور">
+  <input type="text" id="username" placeholder="اسم المستخدم">
+  <input type="password" id="password" placeholder="كلمة المرور">
   <button onclick="login()">دخول</button>
-  <p><a href="#" style="color: #fff; text-decoration: underline;" onclick="switchToRegister()">إنشاء حساب جديد</a></p>
-  <p id="message"></p>
+  <p id="loginMsg"></p>
 </div>
-<div class="box" id="registerBox">
-  <h2>إنشاء حساب جديد</h2>
-  <input type="text" id="regName" placeholder="اسم المستخدم">
-  <input type="email" id="regEmail" placeholder="البريد الإلكتروني">
-  <input type="password" id="regPassword" placeholder="كلمة المرور">
-  <button onclick="register()">تسجيل</button>
-  <button class="back-btn" onclick="switchToLogin()">رجوع</button>
-  <p id="registerMessage"></p>
-</div>
-<div class="box" id="optionsBox">
-  <h2 id="welcomeMessage"></h2>
-  <div class="option-btn" onclick="showBox('investBox')"><div class="icon">💼</div>الاستشارات الاستثمارية</div>
-  <div class="option-btn" onclick="showBox('riskBox')"><div class="icon">🛡️</div>إدارة المخاطر</div>
-  <div class="option-btn" onclick="showBox('reportBox')"><div class="icon">📊</div>التقارير المالية</div>
-  <button class="back-btn" onclick="logout()">تسجيل الخروج</button>
-</div>
-<div class="box" id="investBox">
-  <h2>استشارة استثمارية</h2>
+
+<div class="box" id="mainBox">
+  <h2>استشارة استثمارية ذكية</h2>
   <input type="number" id="amount" placeholder="المبلغ المراد استثماره">
-  <select id="riskLevel">
+  <select id="risk">
     <option value="">اختر مستوى المخاطرة</option>
-    <option value="low">منخفض</option>
-    <option value="medium">متوسط</option>
-    <option value="high">مرتفع</option>
+    <option value="منخفض">منخفض</option>
+    <option value="متوسط">متوسط</option>
+    <option value="مرتفع">مرتفع</option>
   </select>
   <select id="duration">
-    <option value="">اختر المدة</option>
-    <option value="short">قصيرة</option>
-    <option value="long">طويلة</option>
+    <option value="">اختر مدة الاستثمار</option>
+    <option value="قصيرة">قصيرة</option>
+    <option value="طويلة">طويلة</option>
   </select>
-  <textarea id="marketData" placeholder="أدخل ملاحظات عن حركة السوق (مثل: ارتفاع البيتكوين، هبوط الذهب...)"></textarea>
-  <button onclick="analyzeInvestment()">تحليل</button>
-  <p id="investResult"></p>
-  <button class="back-btn" onclick="back()">رجوع</button>
+  <textarea id="market" placeholder="ملاحظات عن السوق (مثال: ارتفاع الذهب، انخفاض العملات)"></textarea>
+  <button onclick="analyze()">تحليل الاستثمار</button>
+  <p id="result"></p>
+  <button class="back-btn" onclick="logout()">تسجيل الخروج</button>
 </div>
-<script>
-function analyzeInvestment() {
-  const amount = +document.getElementById("amount").value;
-  const risk = document.getElementById("riskLevel").value;
-  const duration = document.getElementById("duration").value;
-  const marketNotes = document.getElementById("marketData").value.trim();
 
-  if (!amount || !risk || !duration || !marketNotes) {
-    document.getElementById("investResult").textContent = "يرجى تعبئة كل الحقول بما في ذلك ملاحظات السوق.";
+<script>
+function login() {
+  const u = document.getElementById("username").value;
+  const p = document.getElementById("password").value;
+  if (u && p) {
+    localStorage.setItem("user", u);
+    document.getElementById("loginBox").style.display = "none";
+    document.getElementById("mainBox").style.display = "block";
+  } else {
+    document.getElementById("loginMsg").textContent = "يرجى إدخال اسم المستخدم وكلمة المرور";
+  }
+}
+
+function logout() {
+  localStorage.removeItem("user");
+  document.getElementById("mainBox").style.display = "none";
+  document.getElementById("loginBox").style.display = "block";
+}
+
+window.onload = () => {
+  const user = localStorage.getItem("user");
+  if (user) {
+    document.getElementById("mainBox").style.display = "block";
+  } else {
+    document.getElementById("loginBox").style.display = "block";
+  }
+};
+
+function analyze() {
+  const amount = document.getElementById("amount").value;
+  const risk = document.getElementById("risk").value;
+  const duration = document.getElementById("duration").value;
+  const market = document.getElementById("market").value;
+
+  if (!amount || !risk || !duration || !market) {
+    document.getElementById("result").textContent = "يرجى تعبئة جميع الحقول.";
     return;
   }
 
   const prompt = `
-  مبلغ الاستثمار: ${amount} ريال
-  درجة المخاطرة: ${risk}
-  مدة الاستثمار: ${duration}
-  ملاحظات السوق: ${marketNotes}
-  قدّم لي تحليلًا استثماريًا ذكيًا بناءً على هذه البيانات.
-  `;
+مبلغ الاستثمار: ${amount} ريال
+درجة المخاطرة: ${risk}
+مدة الاستثمار: ${duration}
+ملاحظات السوق: ${market}
+قم بتحليل هذه المعطيات وقدّم نصيحة ذكية باللغة العربية.
+`;
 
-  fetch("https://calm-rose-chipmunk.glitch.me/analyze", {
+  fetch("https://samir-ai-proxy.onrender.com/analyze", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ prompt })
@@ -154,11 +152,10 @@ function analyzeInvestment() {
   .then(res => res.json())
   .then(data => {
     const output = Array.isArray(data) ? data[0]?.generated_text : JSON.stringify(data);
-    document.getElementById("investResult").textContent = output;
+    document.getElementById("result").textContent = output;
   })
-  .catch(err => {
-    document.getElementById("investResult").textContent = "حدث خطأ أثناء الاتصال بالخادم.";
-    console.error(err);
+  .catch(() => {
+    document.getElementById("result").textContent = "حدث خطأ أثناء الاتصال بالخادم.";
   });
 }
 </script>
